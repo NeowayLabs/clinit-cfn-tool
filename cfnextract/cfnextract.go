@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/jteeuwen/go-pkg-optarg"
-	"github.com/tiago4orion/cloudinit-convert/utils"
+	"github.com/neowaylabs/clinit-cfn-tool/utils"
 )
 
 func getAwsUserData(awsMap map[string]interface{}) []map[string]interface{} {

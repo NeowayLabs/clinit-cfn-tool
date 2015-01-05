@@ -9,7 +9,7 @@ import (
 	"text/template"
 
 	"github.com/jteeuwen/go-pkg-optarg"
-	"github.com/tiago4orion/cloudinit-convert/utils"
+	"github.com/neowaylabs/clinit-cfn-tool/utils"
 )
 
 type CloudInit struct {

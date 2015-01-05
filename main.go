@@ -4,21 +4,21 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/tiago4orion/cloudinit-convert/cfnextract"
-	"github.com/tiago4orion/cloudinit-convert/cfninject"
+	"github.com/neowaylabs/clinit-cfn-tool/cfnextract"
+	"github.com/neowaylabs/clinit-cfn-tool/cfninject"
 )
 
 var BANNER string = `
-         ,_---~~~~~----._         
-  _,,_,*^____      _____` + "``" + `*g*\"*, 
- / __/ /'     ^.  /      \ ^@q   f 
-[  @f | @))    |  | @))   l  0 _/  
- \` + "`" + `/   \~____ / __ \_____/    \   
-  |           _l__l_           I   
-  }          [______]           I  
-  ]            | | |            |  
-  ]             ~ ~             |  
-  |                             | cloudinit-aws-tools v0.1  
+         ,_---~~~~~----._
+  _,,_,*^____      _____` + "``" + `*g*\"*,
+ / __/ /'     ^.  /      \ ^@q   f
+[  @f | @))    |  | @))   l  0 _/
+ \` + "`" + `/   \~____ / __ \_____/    \
+  |           _l__l_           I
+  }          [______]           I
+  ]            | | |            |
+  ]             ~ ~             |
+  |                             | cloudinit-aws-tools v0.1
   |                             | Author: Tiago Natel de Moura
 ---------------------------------------------------------------
 `
