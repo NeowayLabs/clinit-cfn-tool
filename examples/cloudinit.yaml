@@ -1,0 +1,6 @@
+#cloud-config
+
+hostname: core-master
+coreos:
+  etcd:
+    discovery: http://test.com/
