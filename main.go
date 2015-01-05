@@ -35,13 +35,17 @@ Available commands:
 
 `
 
+func help() {
+	fmt.Println(BANNER)
+	fmt.Printf(USAGE, os.Args[0], os.Args[0])
+	os.Exit(1)
+}
+
 func main() {
 	var command string
 
 	if len(os.Args) <= 1 {
-		fmt.Println(BANNER)
-		fmt.Printf(USAGE, os.Args[0], os.Args[0])
-		os.Exit(1)
+		help()
 	}
 
 	command = os.Args[1]
@@ -51,6 +55,8 @@ func main() {
 		cfninject.Inject()
 	case "extract":
 		cfnextract.Extract()
+	case "help":
+		help()
 	default:
 		fmt.Println("Unknown command: ", command)
 	}
