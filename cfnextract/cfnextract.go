@@ -11,31 +11,42 @@ import (
 	"github.com/neowaylabs/clinit-cfn-tool/utils"
 )
 
+func getAwsResources(awsMap map[string]interface{}) (map[string]interface{}, error) {
+	for k, v := range awsMap {
+		if k == "Resources" {
+			return v.(map[string]interface{}), nil
+		}
+	}
+
+	return awsMap, errors.New("Resources not found...")
+}
+
 func getAwsUserData(awsMap map[string]interface{}) []map[string]interface{} {
-	var tmp, tmp3, tmp4 map[string]interface{}
+	var tmp map[string]interface{}
 	userDataArr := make([]map[string]interface{}, 0, 0)
 	userDataArr2 := make([]map[string]interface{}, 0, 0)
 
-	for k, v := range awsMap {
-		if k == "Resources" {
-			tmp = v.(map[string]interface{})
-			for kk, vv := range tmp {
-				var _ string = kk // unused variable
-				tmp = vv.(map[string]interface{})
-				if tmp["Properties"] != nil {
-					tmp2 := tmp["Properties"].(map[string]interface{})
-					tmp3 = tmp2
-					if tmp3["UserData"] != nil {
-						tmp4 = tmp3["UserData"].(map[string]interface{})
-						userDataArr2 = make([]map[string]interface{}, len(userDataArr)+1, len(userDataArr)+1)
-						for i := range userDataArr {
-							userDataArr2[i] = userDataArr[i]
-						}
+	resources := awsMap["Resources"].(map[string]interface{})
 
-						userDataArr2[len(userDataArr)] = tmp4
-						userDataArr = userDataArr2
-					}
+	if resources == nil {
+		fmt.Println("AWS CloudFormation Resources not found...")
+		return userDataArr
+	}
+
+	for kk, vv := range resources {
+		var _ string = kk // unused variable
+		tmp = vv.(map[string]interface{})
+		if tmp["Properties"] != nil {
+			tmp := tmp["Properties"].(map[string]interface{})
+			if tmp["UserData"] != nil {
+				tmp = tmp["UserData"].(map[string]interface{})
+				userDataArr2 = make([]map[string]interface{}, len(userDataArr)+1, len(userDataArr)+1)
+				for i := range userDataArr {
+					userDataArr2[i] = userDataArr[i]
 				}
+
+				userDataArr2[len(userDataArr)] = tmp
+				userDataArr = userDataArr2
 			}
 		}
 	}

@@ -111,7 +111,7 @@
         "InstanceType": {"Ref": "InstanceType"},
         "KeyName": {"Ref": "KeyPair"},
         "SecurityGroups": [{"Ref": "KubernetesSecurityGroup"}],
-        "UserData": {{ .CloudInitData }}
+        "UserData": {{ .MasterCloudInitData }}
       }
     },
     "KubernetesNodeLaunchConfig": {
@@ -121,7 +121,7 @@
         "InstanceType": {"Ref": "InstanceType"},
         "KeyName": {"Ref": "KeyPair"},
         "SecurityGroups": [{"Ref": "KubernetesSecurityGroup"}],
-	"UserData": {{ .MasterCloudInitData }}
+	"UserData": {{ .CloudInitData }}
       }
     },
     "KubernetesAutoScalingGroup": {
