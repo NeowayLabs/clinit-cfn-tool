@@ -91,7 +91,8 @@ func JoinCfnUserData(userData map[string]interface{}) (string, error) {
 				funcArrStr[ii] = funcArr[ii].(string)
 			}
 
-			cloudInitData[i] = "$" + strings.Join(funcArrStr, "_")
+			//TODO: Support other functions in the future...
+			cloudInitData[i] = "{{ .GetAtt." + strings.Join(funcArrStr, ".") + " }}"
 		}
 	}
 

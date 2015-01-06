@@ -2,9 +2,11 @@ package cfninject
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -20,6 +22,16 @@ type CloudInit struct {
 	CloudInitData       string
 }
 
+func getAwsVar(variable string) (string, error) {
+	varParts := strings.Split(variable, ".")
+
+	if len(varParts) >= 3 {
+		return `, {"Fn::GetAtt": ["` + strings.Join(varParts[2:], `","`) + `"]}, "`, nil
+	} else {
+		return "", errors.New("Invalid variable '" + variable + "'")
+	}
+}
+
 func ValidateAwsTemplate(content string) bool {
 	return strings.LastIndexAny(content, " .CloudInitData ") >= 0
 }
@@ -31,10 +43,46 @@ func applyJoinTemplate(cloudData []string) string {
 		"last": func(x int, a interface{}) bool {
 			return x == reflect.ValueOf(a).Len()-1
 		},
+		"quote": func(str string) string {
+			return strconv.Quote(str)
+		},
+		"concat": func(str1 string, str2 string) string {
+			return str1 + str2
+		},
+		"quote_concat": func(str1 string, str2 string) string {
+			return strconv.Quote(str1 + str2)
+		},
+		"quote_replace_vars": func(str string) string {
+			// in:          --etcd_servers=http://{{ .GetAtt.KubernetesMasterInstance.PrivateIp }}:4001\
+			// out: "        --etcd_servers=http://", {"Fn::GetAtt" :["KubernetesMasterInstance" , "PrivateIp"]}, ":4001\\\n",
+
+			str = str + "\n"
+			retStr := str
+			idx1 := strings.Index(str, "{{")
+
+			if idx1 != -1 {
+				idx2 := strings.Index(str[idx1:], "}}")
+
+				if idx2 != -1 {
+					variable := strings.Trim(str[idx1+2:(idx1+idx2-1)], " ")
+					variableSubst, err := getAwsVar(variable)
+
+					if err != nil {
+						retStr = strconv.Quote(str)
+					} else {
+						retStr = strconv.Quote(str[0:idx1]) + variableSubst + strconv.Quote(str[idx1+idx2+2:])
+					}
+				}
+			} else {
+				retStr = strconv.Quote(retStr)
+			}
+
+			return retStr
+		},
 	}
 
 	joinTemplate := `{ "Fn::Base64": {"Fn::Join" : ["", [
-	    {{ range $index, $element := . }}"{{ $element }}\n"{{if last $index $ | not}},
+	    {{ range $index, $element := . }}{{ quote_replace_vars $element }}{{if last $index $ | not}},
 	    {{end}}{{ end }}
           ]]}
         }`
@@ -50,11 +98,11 @@ func applyJoinTemplate(cloudData []string) string {
 }
 
 func ApplyTemplate(cloudInit CloudInit, masterCloudInitData []string, cloudInitData []string, awsContentStr string) bool {
-	cloudInit.CloudInitData = applyJoinTemplate(cloudInitData)
-
 	if len(masterCloudInitData) > 0 && masterCloudInitData != nil {
 		cloudInit.MasterCloudInitData = applyJoinTemplate(masterCloudInitData)
 	}
+
+	cloudInit.CloudInitData = applyJoinTemplate(cloudInitData)
 
 	tmpl, err := template.New("aws-cloud-formation").Parse(awsContentStr)
 
