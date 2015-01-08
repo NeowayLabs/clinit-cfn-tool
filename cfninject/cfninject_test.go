@@ -20,7 +20,7 @@ func TestGetAwsVars(t *testing.T) {
 
 	utils.Check(err)
 
-	if awsVar != `, {"Fn::GetAtt": ["MasterInstance","PrivateIp"]}, "` {
+	if awsVar != `, {"Fn::GetAtt": ["MasterInstance","PrivateIp"]}, ` {
 		t.Error("Error when converting variable '", var1, "'")
 	}
 
@@ -29,7 +29,7 @@ func TestGetAwsVars(t *testing.T) {
 
 	utils.Check(err)
 
-	if awsVar != `, {"Fn::GetAtt": ["NodeInstance","Name"]}, "` {
+	if awsVar != `, {"Fn::GetAtt": ["NodeInstance","Name"]}, ` {
 		t.Error("Error when converting variable '", var2, "'")
 	}
 

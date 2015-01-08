@@ -26,7 +26,7 @@ func getAwsVar(variable string) (string, error) {
 	varParts := strings.Split(variable, ".")
 
 	if len(varParts) >= 3 {
-		return `, {"Fn::GetAtt": ["` + strings.Join(varParts[2:], `","`) + `"]}, "`, nil
+		return `, {"Fn::GetAtt": ["` + strings.Join(varParts[2:], `","`) + `"]}, `, nil
 	} else {
 		return "", errors.New("Invalid variable '" + variable + "'")
 	}
