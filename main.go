@@ -1,11 +1,12 @@
+// main package
 package main
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/neowaylabs/clinit-cfn-tool/cfnextract"
-	"github.com/neowaylabs/clinit-cfn-tool/cfninject"
+	"github.com/NeowayLabs/clinit-cfn-tool/cfnextract"
+	"github.com/NeowayLabs/clinit-cfn-tool/cfninject"
 )
 
 var BANNER string = `

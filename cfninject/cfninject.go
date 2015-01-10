@@ -10,8 +10,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/NeowayLabs/clinit-cfn-tool/utils"
 	"github.com/jteeuwen/go-pkg-optarg"
-	"github.com/neowaylabs/clinit-cfn-tool/utils"
 )
 
 type CloudInit struct {

@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/NeowayLabs/clinit-cfn-tool/utils"
 	"github.com/jteeuwen/go-pkg-optarg"
-	"github.com/neowaylabs/clinit-cfn-tool/utils"
 )
 
 func getAwsResources(awsMap map[string]interface{}) (map[string]interface{}, error) {
