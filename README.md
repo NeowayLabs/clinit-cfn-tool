@@ -12,3 +12,5 @@ Install
 $ go get github.com/NeowayLabs/clinit-cfn-tool
 $ GOPATH/bin/clinit-cfn-tool
 ```
+
+License: BSD
