@@ -13,4 +13,7 @@ $ go get github.com/NeowayLabs/clinit-cfn-tool
 $ GOPATH/bin/clinit-cfn-tool
 ```
 
+Usage
+===========
+
 License: BSD
