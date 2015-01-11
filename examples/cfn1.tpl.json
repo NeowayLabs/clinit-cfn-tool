@@ -1,0 +1,10 @@
+{
+    "Resources": {
+	    "MasterInstance": {
+	        "Type": "AWS::EC2::Instance",
+	        "Properties": {
+		        "UserData": {{ .CloudInitData }}
+	        }
+	    }
+    }
+}
