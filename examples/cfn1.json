@@ -1,0 +1,44 @@
+{
+    "Resources": {
+	"MasterInstance": {
+	    "Type": "AWS::EC2::Instance",
+	    "Properties": {
+		"UserData": { "Fn::Base64": {"Fn::Join" : ["", [
+		    "# Add groups to the system\n",
+		    "# The following example adds the ubuntu group with members foo and bar and\n",
+		    "# the group cloud-users.\n",
+		    "groups:\n",
+		    "  - ubuntu: [foo,bar]\n",
+		    "  - cloud-users\n",
+		    "\n",
+		    "# Add users to the system. Users are added after groups are added.\n",
+		    "users:\n",
+		    "  - default\n",
+		    "  - name: foobar\n",
+		    "    gecos: Foo B. Bar\n",
+		    "    primary-group: foobar\n",
+		    "    groups: users\n",
+		    "    selinux-user: staff_u\n",
+		    "    expiredate: 2012-09-01\n",
+		    "    ssh-import-id: foobar\n",
+		    "    lock-passwd: false\n",
+		    "    passwd: $6$j212wezy$7H/1LT4f9/N3wpgNunhsIqtMj62OKiS3nyNwuizouQc3u7MbYCarYeAHWYPYb2FT.lbioDm2RrkJPb9BZMN1O/\n",
+		    "  - name: barfoo\n",
+		    "    gecos: Bar B. Foo\n",
+		    "    sudo: ALL=(ALL) NOPASSWD:ALL\n",
+		    "    groups: users, admin\n",
+		    "    ssh-import-id: None\n",
+		    "    lock-passwd: true\n",
+		    "    ssh-authorized-keys:\n",
+		    "      - <ssh pub key 1>\n",
+		    "      - <ssh pub key 2>\n",
+		    "  - name: cloudy\n",
+		    "    gecos: Magic Cloud App Daemon User\n",
+		    "    inactive: true\n",
+		    "    system: true\n"
+		]]}
+			    }
+	    }
+	}
+    }
+}

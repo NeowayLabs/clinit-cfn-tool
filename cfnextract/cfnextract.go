@@ -34,10 +34,14 @@ func getAwsUserData(awsMap map[string]interface{}) []map[string]interface{} {
 	}
 
 	for kk, vv := range resources {
-		var _ string = kk // unused variable
 		tmp = vv.(map[string]interface{})
 		if tmp["Properties"] != nil {
 			tmp := tmp["Properties"].(map[string]interface{})
+			if tmp == nil {
+				fmt.Printf("Resource '%s' doesn't have UserData\n", kk)
+				continue
+			}
+
 			if tmp["UserData"] != nil {
 				tmp = tmp["UserData"].(map[string]interface{})
 				userDataArr2 = make([]map[string]interface{}, len(userDataArr)+1, len(userDataArr)+1)
@@ -48,6 +52,8 @@ func getAwsUserData(awsMap map[string]interface{}) []map[string]interface{} {
 				userDataArr2[len(userDataArr)] = tmp
 				userDataArr = userDataArr2
 			}
+		} else {
+			fmt.Printf("Resource '%s' doesn't have Properties\n", kk)
 		}
 	}
 
@@ -110,8 +116,6 @@ func handleUserData(userData map[string]interface{}) string {
 }
 
 func ExtractCloudinit(baseCloudinitPath string, awsFormationPath string) bool {
-	fmt.Println(baseCloudinitPath, awsFormationPath)
-
 	awsFormationContentStr := utils.ReadFile(awsFormationPath)
 	awsMapInt, err := utils.DecodeJson([]byte(awsFormationContentStr))
 
@@ -127,7 +131,6 @@ func ExtractCloudinit(baseCloudinitPath string, awsFormationPath string) bool {
 	}
 
 	userData := getAwsUserData(awsMap)
-
 	cloudInitDataArr := make([]string, len(userData), len(userData))
 
 	for i := range userData {
