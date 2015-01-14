@@ -3,7 +3,7 @@ package cfninject
 import (
 	"testing"
 
-	"github.com/neowaylabs/clinit-cfn-tool/utils"
+	"github.com/NeowayLabs/clinit-cfn-tool/utils"
 )
 
 func TestValidateAwsTemplate(t *testing.T) {
