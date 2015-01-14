@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/NeowayLabs/clinit-cfn-tool.svg?branch=master)](https://travis-ci.org/NeowayLabs/clinit-cfn-tool)
+[![Build Status](https://travis-ci.org/NeowayLabs/clinit-cfn-tool.svg?branch=master)](https://travis-ci.org/NeowayLabs/clinit-cfn-tool) [![Build Status](https://drone.io/github.com/NeowayLabs/clinit-cfn-tool/status.png)](https://drone.io/github.com/NeowayLabs/clinit-cfn-tool/latest)
 
 clinit-cfn-tool
 ===============
