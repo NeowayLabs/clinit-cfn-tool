@@ -25,11 +25,19 @@ type CloudInit struct {
 func getAwsVar(variable string) (string, error) {
 	varParts := strings.Split(variable, ".")
 
-	if len(varParts) >= 3 {
-		return `, {"Fn::GetAtt": ["` + strings.Join(varParts[2:], `","`) + `"]}, `, nil
-	} else {
+	if len(varParts) <= 2 {
 		return "", errors.New("Invalid variable '" + variable + "'")
 	}
+
+	if varParts[1] == "Ref" {
+		return `, {"Ref": "` + varParts[2] + `"}, `, nil
+	}
+
+	if varParts[1] == "GetAtt" && len(varParts) >= 3 {
+		return `, {"Fn::GetAtt": ["` + strings.Join(varParts[2:], `","`) + `"]}, `, nil
+	}
+
+	return "", errors.New("Invalid variable '" + variable + "'")
 }
 
 func ValidateAwsTemplate(content string) bool {
