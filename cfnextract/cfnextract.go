@@ -138,7 +138,7 @@ func ExtractCloudinit(baseCloudinitPath string, awsFormationPath string) bool {
 	awsMapInt, err := utils.DecodeJson([]byte(awsFormationContentStr))
 
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("Failed to decode JSON: %s", err.Error())
 		panic(err)
 	}
 	awsMap := awsMapInt.(map[string]interface{})
