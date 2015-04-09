@@ -14,12 +14,9 @@ import (
 	"github.com/jteeuwen/go-pkg-optarg"
 )
 
-type CloudInit struct {
-	CurrentDate         string
-	Hostname            string
-	Description         string
-	MasterCloudInitData string
-	CloudInitData       string
+type CloudInitInfo struct {
+	Variable string
+	Path     string
 }
 
 func getAwsVar(variable string) (string, error) {
@@ -40,8 +37,8 @@ func getAwsVar(variable string) (string, error) {
 	return "", errors.New("Invalid variable '" + variable + "'")
 }
 
-func ValidateAwsTemplate(content string) bool {
-	return strings.LastIndexAny(content, " .CloudInitData ") >= 0
+func ValidateAwsTemplate(content, variable string) bool {
+	return strings.LastIndexAny(content, " ."+variable+" ") >= 0
 }
 
 func applyJoinTemplate(cloudData []string) string {
@@ -105,71 +102,82 @@ func applyJoinTemplate(cloudData []string) string {
 	return buffer.String()
 }
 
-func ApplyTemplate(cloudInit CloudInit, masterCloudInitData []string, cloudInitData []string, awsContentStr string) bool {
-	if len(masterCloudInitData) > 0 && masterCloudInitData != nil {
-		cloudInit.MasterCloudInitData = applyJoinTemplate(masterCloudInitData)
-	}
-
-	cloudInit.CloudInitData = applyJoinTemplate(cloudInitData)
-
+func ApplyTemplate(cloudInit map[string]string, awsContentStr string) (bool, string) {
+	var buf bytes.Buffer
 	tmpl, err := template.New("aws-cloud-formation").Parse(awsContentStr)
 
 	utils.Check(err)
 
-	err = tmpl.Execute(os.Stdout, cloudInit)
-
+	err = tmpl.Execute(&buf, cloudInit)
 	utils.Check(err)
 
-	return true
+	return true, string(buf.Bytes())
 }
 
-func Conversion(masterClinitPath string, clinitPath string, awsFormationPath string) bool {
-	var masterClinitContentStr, clinitContentStr, awsFormationContentStr string
-	var masterClinitParts, clinitParts []string
+func Conversion(clinitConfig []CloudInitInfo, awsFormationPath string) bool {
+	var clinitContentStr, awsFormationContentStr string
+	var clinitParts []string
+	var ok bool
 
-	if clinitPath == "" || awsFormationPath == "" {
+	if awsFormationPath == "" {
 		return false
 	}
 
-	if masterClinitPath != "" {
-		masterClinitContentStr = utils.ReadFile(masterClinitPath)
-	}
-
-	clinitContentStr = utils.ReadFile(clinitPath)
 	awsFormationContentStr = utils.ReadFile(awsFormationPath)
+	cloudInit := make(map[string]string)
 
-	clinitParts = strings.Split(clinitContentStr, "\n")
+	for _, cl := range clinitConfig {
+		clinitPath := cl.Path
+		clInitVar := cl.Variable
 
-	if len(clinitParts) <= 0 {
-		return false
+		clinitContentStr = utils.ReadFile(clinitPath)
+		clinitParts = strings.Split(clinitContentStr, "\n")
+
+		if len(clinitParts) <= 0 {
+			return false
+		}
+
+		if !ValidateAwsTemplate(awsFormationContentStr, clInitVar) {
+			return false
+		}
+
+		cloudInit[clInitVar] = applyJoinTemplate(clinitParts)
 	}
 
-	if masterClinitContentStr != "" {
-		masterClinitParts = strings.Split(masterClinitContentStr, "\n")
-	} else {
-		masterClinitParts = nil
+	ok, awsFormationContentStr = ApplyTemplate(cloudInit, awsFormationContentStr)
+
+	if ok {
+		fmt.Println(awsFormationContentStr)
+		return true
 	}
 
-	if !ValidateAwsTemplate(awsFormationContentStr) {
-		return false
+	return false
+}
+
+func configureCloudInit(cloudinitPairs string) ([]CloudInitInfo, error) {
+	clParts := strings.Split(cloudinitPairs, ",")
+	cloudinitInfo := make([]CloudInitInfo, len(clParts))
+
+	for i, cl := range clParts {
+		varPath := strings.Split(cl, ":")
+
+		if len(varPath) != 2 {
+			return cloudinitInfo, errors.New("Invalid -c option")
+		}
+
+		cloudinitInfo[i].Variable = varPath[0]
+		cloudinitInfo[i].Path = varPath[1]
 	}
 
-	cloudInit := CloudInit{
-		Hostname:    "core-master",
-		CurrentDate: "2010-01-01",
-		Description: "Kubernetes AWS Formation",
-	}
-
-	return ApplyTemplate(cloudInit, masterClinitParts, clinitParts, awsFormationContentStr)
+	return cloudinitInfo, nil
 }
 
 func Inject() {
-	var cloudinitOpt, awsFormationTpl, masterCloudinitOpt string
+	var cloudinitOpt, awsFormationTpl string
 	var helpOpt, missingOpts bool
 
 	optarg.Add("h", "help", "Displays this help", false)
-	optarg.Add("c", "cloudinit", "Cloudinit input file", "")
-	optarg.Add("m", "master-cloudinit", "Cloudinit of Master Instance", "")
+	optarg.Add("c", "cloudinit", "Cloudinit pairs: <VARIABLE_NAME>:<file-path>[,<VARIABLE_NAME>,<file-path>]", "")
 	optarg.Add("f", "aws-cloud-formation-tpl", "AWS CloudFormation template", "")
 
 	for opt := range optarg.Parse() {
@@ -180,8 +188,6 @@ func Inject() {
 			helpOpt = opt.Bool()
 		case "f":
 			awsFormationTpl = opt.String()
-		case "m":
-			masterCloudinitOpt = opt.String()
 		}
 	}
 
@@ -192,6 +198,13 @@ func Inject() {
 
 	if cloudinitOpt == "" {
 		fmt.Println("-c is required...")
+		missingOpts = true
+	}
+
+	cloudInitPairs, err := configureCloudInit(cloudinitOpt)
+
+	if err != nil {
+		fmt.Println(err.Error())
 		missingOpts = true
 	}
 
@@ -210,5 +223,5 @@ func Inject() {
 		fmt.Println(awsFormationTpl)
 	}
 
-	Conversion(masterCloudinitOpt, cloudinitOpt, awsFormationTpl)
+	Conversion(cloudInitPairs, awsFormationTpl)
 }

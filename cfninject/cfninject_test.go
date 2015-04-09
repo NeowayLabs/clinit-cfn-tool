@@ -9,7 +9,7 @@ import (
 func TestValidateAwsTemplate(t *testing.T) {
 	content := utils.ReadFile("./../test/samples/file2.txt")
 
-	if !ValidateAwsTemplate(content) {
+	if !ValidateAwsTemplate(content, "CloudInitData") {
 		t.Error("File not validate as AWS CloudFormation with CloudInitData variable")
 	}
 }
