@@ -114,7 +114,7 @@ func JoinCfnUserData(userData map[string]interface{}) (string, error) {
 				case reflect.String:
 					cloudInitData[i] = "{{ ." + f + "." + awsValue.(string) + " }}"
 				default:
-					return "", fmt.Errorf("Unsupported special variable of type '%': %s: %s", v, f, awsValue)
+					return "", fmt.Errorf("Unsupported special variable of type '%s': %s: %s", v, f, awsValue)
 				}
 			}
 		}
