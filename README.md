@@ -139,10 +139,10 @@ The second usage is for the reverse, inject cloud-config inside a CloudFormation
 ```
 Run:
 ```
-clinit-cfn-tool inject -c ./cloudconfig1.yml -f ./examples/cfn1.tpl.json > ./cfn-output.json
+clinit-cfn-tool inject -c CloudInitData:./examples/cloudconfig1.yml -f ./examples/cfn1.tpl.json > ./cfn-output.json
 ```
 
-More than one instance ? Ok, we have limitations here. The "extract" sub-command extract user-data of every Resource of type "AWS::EC2::Instance" and write to output files with format name ./{{name}}XX.yaml, where 'X' is a incremental number. But for inject we can't generate an output AWS CloudFormation file from multiples cloud-config files. For now, the clinit-cfn-tool is limited to generate a cfn with the maximum of two cloud-config, one called "master" and the other "node", in that case, the usage is like this:
+More than one instance ? Ok, we have limitations here. The "extract" sub-command extract user-data of every Resource of type "AWS::EC2::Instance" and write to output files with format name ./{{name}}XX.yaml, where 'X' is a incremental number. But for inject we need pass the pairs of template variables and path of cloudconfigs. See the example below:
 
 CFN-Template: ./aws-master-node.tpl.json
 ```JSON
@@ -294,9 +294,8 @@ CFN-Template: ./aws-master-node.tpl.json
 
 Note the .MasterCloudInitData and .CloudInitData variables. For generate the formation for this two instances we can run:
 ```
-clinit-cfn-tool inject -m ./master-cloudconfig.yml -c ./node-cloudconfig.yml -f ./aws-master-node.tpl.json > ./aws-master-node.json
+clinit-cfn-tool inject -c MasterCloudInitData:./master-cloudconfig.yml,CloudInitData:./node-cloudconfig.yml -f ./aws-master-node.tpl.json > ./aws-master-node.json
 ```
-If you really need generate a CloudFormation using more than two cloud-config files, we accept a PR for that =D
 
 Found a bug? Open an issue [here](https://github.com/NeowayLabs/clinit-cfn-tool/issues)
 
