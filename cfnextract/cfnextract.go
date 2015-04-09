@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -88,17 +89,34 @@ func JoinCfnUserData(userData map[string]interface{}) (string, error) {
 		if elemStr, ok := elem.(string); ok {
 			cloudInitData[i] = elemStr
 		} else {
-			specialAwsFunc := elem.(map[string]interface{})
-			funcArr := specialAwsFunc["Fn::GetAtt"].([]interface{})
+			specialAwsFunc, ok := elem.(map[string]interface{})
 
-			funcArrStr := make([]string, len(funcArr))
-
-			for ii := range funcArr {
-				funcArrStr[ii] = funcArr[ii].(string)
+			if !ok {
+				return "", fmt.Errorf("Unsupported value: ", specialAwsFunc)
 			}
 
-			//TODO: Support other functions in the future...
-			cloudInitData[i] = "{{ .GetAtt." + strings.Join(funcArrStr, ".") + " }}"
+			if len(specialAwsFunc) != 1 {
+				return "", fmt.Errorf("Unsupported special variable: %s", specialAwsFunc)
+			}
+
+			for f, awsValue := range specialAwsFunc {
+				v := reflect.TypeOf(awsValue)
+
+				switch v.Kind() {
+				case reflect.Slice:
+					funcArr := awsValue.([]interface{})
+					funcArrStr := make([]string, len(funcArr))
+					for ii := range funcArr {
+						funcArrStr[ii] = funcArr[ii].(string)
+					}
+
+					cloudInitData[i] = "{{ ." + f + "." + strings.Join(funcArrStr, ".") + " }}"
+				case reflect.String:
+					cloudInitData[i] = "{{ ." + f + "." + awsValue.(string) + " }}"
+				default:
+					return "", fmt.Errorf("Unsupported special variable of type '%': %s: %s", v, f, awsValue)
+				}
+			}
 		}
 	}
 
